@@ -1,5 +1,6 @@
 import React from 'react';
 import Board from './Board';
+import BoardUtils from '../utils/BoardUtils';
 
 class Game extends React.Component {
   constructor(props) {
@@ -12,6 +13,7 @@ class Game extends React.Component {
       }],
       stepNumber: 0,
       xIsNext: true,
+      movesAsc: true,
     };
   }
 
@@ -21,7 +23,7 @@ class Game extends React.Component {
     const squares = current.squares.slice();
 
     // Don't make move if winner exists or square is not null
-    if (this.calculateWinner(squares) || squares[i]) {
+    if (BoardUtils.calculateWinner(squares) || squares[i]) {
       return;
     }
 
@@ -35,26 +37,6 @@ class Game extends React.Component {
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
     });
-  }
-
-  calculateWinner(squares) {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
-      }
-    }
-    return null;
   }
 
   jumpTo(step) {
@@ -79,6 +61,12 @@ class Game extends React.Component {
       return `Winner ${winner}`;
     }
     return `Next player: ${this.playerSymbol(this.state.xIsNext)}`;
+  }
+
+  toggleMovesOrder() {
+    this.setState({
+      movesAsc: !this.state.movesAsc,
+    })
   }
 
   renderMove(step, move) {
@@ -106,7 +94,7 @@ class Game extends React.Component {
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = this.calculateWinner(current.squares);
+    const winner = BoardUtils.calculateWinner(current.squares);
     const moves = history.map((step,move) => this.renderMove(step, move));
 
     return (
@@ -119,7 +107,8 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{this.getStatusMsg(winner)}</div>
-          <ol>{moves}</ol>
+          <button onClick={() => this.toggleMovesOrder()}>Toggle Order</button>
+          <ol>{this.state.movesAsc ? moves : moves.reverse()}</ol>
         </div>
       </div>
     );
